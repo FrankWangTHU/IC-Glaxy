@@ -24,7 +24,14 @@ import {
   MessageSquareText,
   Send,
   Bot,
-  Sparkles
+  Sparkles,
+  Play,
+  Pause,
+  SkipForward,
+  SkipBack,
+  Film,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 
 // --- Types ---
@@ -222,6 +229,292 @@ const LINKS: Link[] = [
   { source: 'design', target: 'process', desc: '设计版图需符合工艺设计规则(DRC)' },
   { source: 'materials', target: 'process', desc: '新材料引入需要开发新工艺流程' },
   { source: 'eda', target: 'soc', desc: '系统级验证工具保障SoC良率' },
+];
+
+// --- Genesis Story Data ---
+
+interface GenesisStage {
+  id: number;
+  title: string;
+  desc: string;
+  nodeId: string;
+  renderVisual: () => React.ReactNode;
+}
+
+const GENESIS_STAGES: GenesisStage[] = [
+  { 
+    id: 1, 
+    title: '沙子变单晶 (Sand to Ingot)', 
+    desc: '一切始于沙漠中的石英砂（二氧化硅）。在 1400°C 的熔炉中，我们提纯出纯度 99.9999999% 的多晶硅，然后像拉糖丝一样，拉出一根完美的单晶硅棒。', 
+    nodeId: 'materials',
+    renderVisual: () => (
+      <div className="relative w-full h-full bg-slate-900 rounded-xl overflow-hidden border border-slate-700 flex items-center justify-center">
+         {/* Particles (Sand) */}
+         <div className="absolute bottom-0 w-full h-20 flex justify-center items-end gap-1">
+            {[...Array(30)].map((_, i) => (
+               <motion.div 
+                 key={i}
+                 className="w-2 h-2 rounded-full bg-amber-200 opacity-60"
+                 initial={{ y: 0, opacity: 1 }}
+                 animate={{ 
+                    y: [0, -150, -200], 
+                    x: [0, (Math.random() - 0.5) * 50, 0],
+                    opacity: [1, 1, 0],
+                    scale: [1, 0.5, 0]
+                 }}
+                 transition={{ 
+                   duration: 3 + Math.random(), 
+                   repeat: Infinity, 
+                   delay: Math.random() * 2 
+                 }}
+               />
+            ))}
+         </div>
+         
+         {/* Melting Pot / Crucible */}
+         <div className="absolute bottom-10 w-40 h-10 bg-orange-600 rounded-b-full blur-md opacity-50 animate-pulse" />
+         
+         {/* Growing Ingot */}
+         <motion.div 
+           className="w-16 bg-gradient-to-b from-slate-300 via-slate-500 to-slate-800 rounded-b-full relative z-10"
+           initial={{ height: 0 }}
+           animate={{ height: 180 }}
+           transition={{ duration: 10, repeat: Infinity, repeatType: "reverse" }}
+         >
+            {/* Rotation Hint */}
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-[spin_3s_linear_infinite]" />
+         </motion.div>
+         
+         {/* Puller rod */}
+         <motion.div 
+            className="absolute top-0 w-2 h-20 bg-slate-500"
+            animate={{ y: [-20, 0, -20] }}
+            transition={{ duration: 10, repeat: Infinity, repeatType: "reverse" }}
+         />
+      </div>
+    )
+  },
+  { 
+    id: 2, 
+    title: '切片与抛光 (Wafer Prep)', 
+    desc: '单晶硅棒被像切香肠一样切成薄片。经过精细的研磨和化学抛光，表面变得如镜面般平整，晶圆（Wafer）诞生了。', 
+    nodeId: 'materials',
+    renderVisual: () => (
+      <div className="relative w-full h-full bg-slate-900 rounded-xl overflow-hidden border border-slate-700 flex items-center justify-center">
+         {/* The Ingot (Horizontal) */}
+         <div className="absolute left-10 w-40 h-20 bg-gradient-to-b from-slate-400 to-slate-800 rounded-l-lg" />
+         
+         {/* Saw Blade */}
+         <motion.div 
+           className="absolute left-48 top-10 w-1 h-32 bg-red-500/50 shadow-[0_0_10px_red]"
+           animate={{ height: [0, 32, 0] }}
+           transition={{ duration: 0.5, repeat: Infinity }}
+         />
+         
+         {/* Falling Slices */}
+         <motion.div 
+            className="absolute left-52 w-4 h-20 bg-slate-300 rounded-full opacity-0"
+            animate={{ 
+               opacity: [0, 1, 1, 0],
+               x: [0, 50, 150],
+               y: [0, 0, 50],
+               rotateY: [0, 0, 80]
+            }}
+            transition={{ duration: 2, repeat: Infinity, times: [0, 0.2, 0.8, 1] }}
+         />
+
+         {/* Polishing Pad (Right Side) */}
+         <div className="absolute right-10 bottom-10 w-32 h-32 bg-slate-800 rounded-full flex items-center justify-center border border-slate-600">
+            <motion.div 
+              className="w-24 h-24 rounded-full bg-gradient-to-tr from-slate-200 to-white/50"
+              animate={{ rotate: 360 }}
+              transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
+            >
+               <div className="absolute inset-0 opacity-50 bg-[radial-gradient(circle_at_30%_30%,white,transparent)]" />
+            </motion.div>
+            <motion.div 
+               className="absolute w-10 h-10 bg-blue-500/30 blur-xl rounded-full"
+               animate={{ x: [-10, 10, -10], y: [-10, 10, -10] }}
+               transition={{ duration: 1, repeat: Infinity }}
+            />
+         </div>
+      </div>
+    )
+  },
+  { 
+    id: 3, 
+    title: '绘制蓝图 (IC Design)', 
+    desc: '在硅片加工之前，设计师在电脑上绘制出包含数十亿晶体管的宏伟蓝图。这就像是在设计一座超级迷宫城市。', 
+    nodeId: 'design',
+    renderVisual: () => (
+      <div className="relative w-full h-full bg-slate-950 rounded-xl overflow-hidden border border-slate-700 flex items-center justify-center">
+         {/* Grid Background */}
+         <div className="absolute inset-0" style={{ backgroundImage: 'radial-gradient(#1e293b 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
+         
+         {/* Logic Gates Popping In */}
+         <div className="grid grid-cols-6 grid-rows-4 gap-4 relative z-10 p-10">
+            {[...Array(24)].map((_, i) => (
+               <motion.div 
+                 key={i}
+                 className="w-8 h-8 rounded border border-neon-blue/50 bg-neon-blue/10 flex items-center justify-center"
+                 initial={{ scale: 0 }}
+                 animate={{ scale: 1 }}
+                 transition={{ delay: i * 0.1, type: "spring" }}
+               >
+                 <div className="w-4 h-4 bg-neon-blue/30 rounded-sm" />
+               </motion.div>
+            ))}
+         </div>
+         
+         {/* Connecting Lines */}
+         <svg className="absolute inset-0 pointer-events-none">
+            <motion.path 
+              d="M 50 50 L 150 50 L 150 150 M 200 100 L 300 100" 
+              stroke="#00f3ff" 
+              strokeWidth="2" 
+              fill="transparent"
+              initial={{ pathLength: 0 }}
+              animate={{ pathLength: 1 }}
+              transition={{ duration: 2, repeat: Infinity, repeatDelay: 1 }}
+            />
+         </svg>
+      </div>
+    )
+  },
+  { 
+    id: 4, 
+    title: '虚拟演练 (EDA Simulation)', 
+    desc: '在投入昂贵的制造之前，EDA 软件会模拟电路运行，检查是否有“短路”或“拥堵”。这是芯片的体检过程。', 
+    nodeId: 'eda',
+    renderVisual: () => (
+      <div className="relative w-full h-full bg-slate-900 rounded-xl overflow-hidden border border-slate-700 flex items-center justify-center">
+         {/* The Chip Blueprint */}
+         <div className="w-64 h-64 bg-slate-800 border-2 border-slate-600 rounded-lg relative overflow-hidden grid grid-cols-4 grid-rows-4 gap-1 p-1">
+             {[...Array(16)].map((_, i) => (
+                <div key={i} className={`bg-slate-700 rounded-sm ${i === 7 ? 'bg-red-500/50' : ''}`}></div> // Simulate an error at index 7
+             ))}
+         </div>
+
+         {/* Scanner Bar */}
+         <motion.div 
+            className="absolute top-0 w-full h-2 bg-neon-green shadow-[0_0_20px_#00ff9d]"
+            animate={{ top: ['0%', '100%', '0%'] }}
+            transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+         />
+         
+         {/* Status Text Overlay */}
+         <div className="absolute bottom-4 right-4 bg-black/80 p-2 rounded border border-neon-green/30 font-mono text-xs text-neon-green">
+            <motion.div animate={{ opacity: [1, 0.5, 1] }} transition={{ duration: 0.5, repeat: Infinity }}>
+               &gt; RUNNING DRC...<br/>
+               &gt; FOUND ERROR: NET_23<br/>
+               &gt; FIXING...<br/>
+               &gt; PASS
+            </motion.div>
+         </div>
+      </div>
+    )
+  },
+  { 
+    id: 5, 
+    title: '光刻雕琢 (Lithography)', 
+    desc: '这是最神奇的一步。极紫外光（EUV）透过印有电路图的掩膜版，像投影仪一样，把纳米级的电路“打印”在涂有光刻胶的晶圆上。', 
+    nodeId: 'process',
+    renderVisual: () => (
+      <div className="relative w-full h-full bg-slate-900 rounded-xl overflow-hidden border border-slate-700 flex flex-col items-center justify-center">
+         {/* Light Source */}
+         <motion.div 
+           className="absolute top-10 w-20 h-20 bg-purple-600 blur-2xl rounded-full opacity-50"
+           animate={{ scale: [1, 1.2, 1], opacity: [0.5, 0.8, 0.5] }}
+           transition={{ duration: 0.2, repeat: Infinity }} // Fast pulse for UV light
+         />
+         
+         {/* Mask / Reticle */}
+         <div className="w-40 h-2 bg-black border border-slate-500 z-10 mb-8 flex justify-around">
+            <div className="w-4 h-full bg-transparent border-x border-slate-600" />
+            <div className="w-4 h-full bg-transparent border-x border-slate-600" />
+            <div className="w-4 h-full bg-transparent border-x border-slate-600" />
+         </div>
+         
+         {/* Light Beams */}
+         <motion.div 
+            className="w-32 h-32 bg-gradient-to-b from-purple-500/50 to-transparent clip-path-trapezoid absolute top-24"
+            style={{ clipPath: 'polygon(20% 0%, 80% 0%, 100% 100%, 0% 100%)' }}
+            animate={{ opacity: [0.2, 0.6, 0.2] }}
+            transition={{ duration: 0.1, repeat: Infinity }}
+         />
+         
+         {/* Wafer */}
+         <div className="w-48 h-48 bg-slate-800 rounded-full border-2 border-slate-600 relative overflow-hidden flex items-center justify-center transform rotate-x-60">
+             {/* Developing Pattern */}
+             <motion.div 
+               className="w-full h-full bg-[repeating-linear-gradient(90deg,transparent,transparent_10px,#a855f7_10px,#a855f7_12px)] opacity-50"
+               initial={{ width: 0 }}
+               animate={{ width: '100%' }}
+               transition={{ duration: 3, repeat: Infinity }}
+             />
+         </div>
+      </div>
+    )
+  },
+  { 
+    id: 6, 
+    title: '封装测试 (Packaging)', 
+    desc: '脆弱的晶圆被切割成一颗颗小芯片。我们给它穿上黑色的保护壳，引出金属管脚（Pin），最后进行严苛的“高考”（测试），合格后才能出厂。', 
+    nodeId: 'packaging',
+    renderVisual: () => (
+      <div className="relative w-full h-full bg-slate-900 rounded-xl overflow-hidden border border-slate-700 flex items-center justify-center">
+         {/* Conveyor Belt */}
+         <div className="absolute bottom-10 w-full h-4 bg-slate-800 border-t border-slate-600 flex gap-4 overflow-hidden">
+             {[...Array(20)].map((_, i) => (
+                <motion.div 
+                   key={i} 
+                   className="w-1 h-full bg-slate-600"
+                   animate={{ x: [-20, 0] }}
+                   transition={{ duration: 0.5, repeat: Infinity, ease: "linear" }}
+                />
+             ))}
+         </div>
+         
+         {/* Chip being Packaged */}
+         <motion.div 
+            className="w-32 h-32 relative z-10"
+            initial={{ y: -50, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ duration: 0.5 }}
+         >  
+            {/* The Die */}
+            <div className="absolute inset-4 bg-gradient-to-br from-green-400 to-green-800 rounded-sm border border-green-300 shadow-[0_0_20px_rgba(74,222,128,0.3)]" />
+            
+            {/* The Lid Closing */}
+            <motion.div 
+              className="absolute inset-0 bg-black/90 border-2 border-slate-500 rounded-lg flex items-center justify-center"
+              initial={{ scale: 2, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ delay: 1, duration: 0.5 }}
+            >
+               <span className="text-slate-500 text-xs font-bold font-mono">CHIP</span>
+            </motion.div>
+            
+            {/* Legs Growing */}
+            <motion.div 
+               className="absolute -inset-2 border-4 border-dashed border-yellow-600 rounded-xl"
+               initial={{ opacity: 0, scale: 0.8 }}
+               animate={{ opacity: 1, scale: 1 }}
+               transition={{ delay: 1.5, duration: 0.3 }}
+            />
+         </motion.div>
+
+         {/* Test Stamp */}
+         <motion.div 
+            className="absolute top-10 right-20 text-neon-green font-black text-4xl border-4 border-neon-green p-2 rounded rotate-12 opacity-0"
+            animate={{ opacity: 1, scale: [2, 1] }}
+            transition={{ delay: 2, duration: 0.2 }}
+         >
+            PASS
+         </motion.div>
+      </div>
+    )
+  }
 ];
 
 // --- Helpers ---
@@ -801,9 +1094,171 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ node, onClose }) => {
   );
 };
 
+// --- Genesis Story Component ---
+
+interface GenesisStoryProps {
+  onBack: () => void;
+  onDeepDive: (nodeId: string) => void;
+}
+
+const GenesisStory: React.FC<GenesisStoryProps> = ({ onBack, onDeepDive }) => {
+  const [currentStep, setCurrentStep] = useState(0);
+
+  const nextStep = () => {
+    if (currentStep < GENESIS_STAGES.length - 1) {
+      setCurrentStep(currentStep + 1);
+    }
+  };
+
+  const prevStep = () => {
+    if (currentStep > 0) {
+      setCurrentStep(currentStep - 1);
+    }
+  };
+
+  const currentStage = GENESIS_STAGES[currentStep];
+
+  // Handle arrow keys
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowRight') nextStep();
+      if (e.key === 'ArrowLeft') prevStep();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [currentStep]);
+
+  return (
+    <motion.div 
+      initial={{ opacity: 0 }} 
+      animate={{ opacity: 1 }} 
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-50 bg-space flex flex-col font-sans"
+    >
+      {/* Top Bar */}
+      <div className="absolute top-0 left-0 w-full p-6 flex justify-between items-center z-50">
+        <div className="flex items-center gap-3">
+           <Film className="text-neon-blue" />
+           <h2 className="text-2xl font-bold text-white tracking-widest uppercase">Chip Genesis Story</h2>
+        </div>
+        <button onClick={onBack} className="p-2 rounded-full bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700 transition-colors">
+          <X size={24} />
+        </button>
+      </div>
+
+      {/* Main Content Area */}
+      <div className="flex-1 relative flex items-center justify-center bg-slate-900/50">
+        
+        {/* Background Particles */}
+        <div className="absolute inset-0 opacity-20 bg-[url('https://grainy-gradients.vercel.app/noise.svg')]" />
+        
+        {/* Navigation Buttons (Desktop) */}
+        <button 
+          onClick={prevStep}
+          disabled={currentStep === 0}
+          className="hidden md:flex absolute left-8 z-40 w-16 h-16 rounded-full bg-slate-800/80 border border-slate-600 items-center justify-center text-slate-300 hover:text-white hover:border-neon-blue hover:scale-110 transition-all disabled:opacity-30 disabled:hover:scale-100 disabled:hover:border-slate-600 disabled:cursor-not-allowed"
+        >
+          <ChevronLeft size={32} />
+        </button>
+
+        <button 
+          onClick={nextStep}
+          disabled={currentStep === GENESIS_STAGES.length - 1}
+          className="hidden md:flex absolute right-8 z-40 w-16 h-16 rounded-full bg-slate-800/80 border border-slate-600 items-center justify-center text-slate-300 hover:text-white hover:border-neon-blue hover:scale-110 transition-all disabled:opacity-30 disabled:hover:scale-100 disabled:hover:border-slate-600 disabled:cursor-not-allowed"
+        >
+          <ChevronRight size={32} />
+        </button>
+
+        {/* Central Stage Card */}
+        <div className="w-[90vw] h-[75vh] md:w-[80vw] md:h-[70vh] flex flex-col md:flex-row gap-8 items-center">
+            
+            {/* Visual Section (Left/Top) */}
+            <motion.div 
+              key={`visual-${currentStep}`}
+              initial={{ x: 50, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              exit={{ x: -50, opacity: 0 }}
+              transition={{ duration: 0.5 }}
+              className="w-full md:w-1/2 h-[40vh] md:h-full relative"
+            > 
+               {currentStage.renderVisual()}
+               
+               {/* Stage Number Badge */}
+               <div className="absolute top-4 left-4 bg-black/60 backdrop-blur border border-slate-600 text-white px-3 py-1 rounded-full font-mono text-sm">
+                 STEP {currentStep + 1} / {GENESIS_STAGES.length}
+               </div>
+            </motion.div>
+
+            {/* Text Section (Right/Bottom) */}
+            <motion.div 
+              key={`text-${currentStep}`}
+              initial={{ x: 50, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+              className="w-full md:w-1/2 flex flex-col justify-center items-start p-4 md:p-8"
+            >
+               <h3 className="text-neon-blue font-bold tracking-widest text-sm mb-2 uppercase">
+                 The Manufacturing Process
+               </h3>
+               <h1 className="text-3xl md:text-5xl font-bold text-white mb-6 leading-tight">
+                 {currentStage.title}
+               </h1>
+               <p className="text-lg text-slate-300 leading-relaxed mb-8 max-w-xl">
+                 {currentStage.desc}
+               </p>
+               
+               <div className="flex gap-4">
+                 <button 
+                   onClick={() => onDeepDive(currentStage.nodeId)}
+                   className="px-6 py-3 bg-neon-blue text-black font-bold rounded-lg hover:bg-white hover:scale-105 transition-all flex items-center gap-2 shadow-[0_0_20px_rgba(0,243,255,0.3)]"
+                 >
+                   深入探索该领域 <ArrowRight size={18} />
+                 </button>
+               </div>
+            </motion.div>
+        </div>
+      </div>
+
+      {/* Bottom Progress Steps */}
+      <div className="h-20 flex items-center justify-center gap-3 md:gap-6 relative z-50">
+         {GENESIS_STAGES.map((_, idx) => (
+           <button 
+             key={idx}
+             onClick={() => setCurrentStep(idx)}
+             className={`
+               h-1.5 rounded-full transition-all duration-300 
+               ${idx === currentStep ? 'w-12 bg-neon-blue shadow-[0_0_10px_#00f3ff]' : 'w-4 bg-slate-700 hover:bg-slate-500'}
+             `}
+           />
+         ))}
+      </div>
+      
+      {/* Mobile Navigation Controls (Bottom Fixed) */}
+      <div className="md:hidden absolute bottom-24 w-full px-6 flex justify-between z-40">
+        <button 
+          onClick={prevStep}
+          disabled={currentStep === 0}
+          className="p-4 rounded-full bg-slate-800/90 border border-slate-600 disabled:opacity-30"
+        >
+          <ChevronLeft size={24} />
+        </button>
+        <button 
+          onClick={nextStep}
+          disabled={currentStep === GENESIS_STAGES.length - 1}
+          className="p-4 rounded-full bg-slate-800/90 border border-slate-600 disabled:opacity-30"
+        >
+          <ChevronRight size={24} />
+        </button>
+      </div>
+
+    </motion.div>
+  );
+};
+
 // --- Main Application ---
 
 const App = () => {
+  const [viewMode, setViewMode] = useState<'galaxy' | 'genesis'>('galaxy');
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [hoveredNodeId, setHoveredNodeId] = useState<string | null>(null);
 
@@ -811,6 +1266,14 @@ const App = () => {
     () => NODES.find(n => n.id === selectedNodeId),
     [selectedNodeId]
   );
+
+  const handleDeepDive = (nodeId: string) => {
+    setViewMode('galaxy');
+    // Small timeout to allow transition
+    setTimeout(() => {
+      setSelectedNodeId(nodeId);
+    }, 300);
+  };
 
   return (
     <div className="relative w-full h-screen bg-space overflow-hidden font-sans selection:bg-neon-blue selection:text-black">
@@ -829,86 +1292,130 @@ const App = () => {
         }} 
       />
 
-      {/* Header / HUD */}
-      <header className="absolute top-6 left-6 z-40 pointer-events-none">
-        <div className="flex items-center gap-3">
-          <div className="w-3 h-3 bg-neon-green rounded-full animate-pulse-fast shadow-[0_0_10px_#00ff9d]" />
-          <h1 className="text-2xl font-bold tracking-widest text-white">
-            IC GALAXY <span className="text-neon-blue text-sm align-top opacity-80">v2.0</span>
-          </h1>
-        </div>
-        <p className="text-slate-400 text-xs font-mono mt-1 tracking-wider ml-6">
-          INTEGRATED CIRCUIT KNOWLEDGE GRAPH
-        </p>
-      </header>
+      <AnimatePresence mode='wait'>
+        {viewMode === 'galaxy' && (
+          <motion.div 
+            key="galaxy"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            transition={{ duration: 0.5 }}
+            className="w-full h-full relative"
+          >
+            {/* Header / HUD */}
+            <header className="absolute top-6 left-6 z-40 flex items-center gap-8">
+              <div>
+                <div className="flex items-center gap-3">
+                  <div className="w-3 h-3 bg-neon-green rounded-full animate-pulse-fast shadow-[0_0_10px_#00ff9d]" />
+                  <h1 className="text-2xl font-bold tracking-widest text-white">
+                    IC GALAXY <span className="text-neon-blue text-sm align-top opacity-80">v2.0</span>
+                  </h1>
+                </div>
+                <p className="text-slate-400 text-xs font-mono mt-1 tracking-wider ml-6">
+                  INTEGRATED CIRCUIT KNOWLEDGE GRAPH
+                </p>
+              </div>
 
-      {/* Main Interactive Area */}
-      <main className="relative w-full h-full flex items-center justify-center">
-        
-        {/* Galaxy Container */}
-        {/* Adjusted Layout Logic: Moves left and scales down when selected */}
-        <motion.div 
-          className="relative w-[90vmin] h-[90vmin] md:w-[70vmin] md:h-[70vmin]"
-          animate={{
-            x: selectedNodeId ? '-25%' : '0%',
-            scale: selectedNodeId ? 0.75 : 1,
-            opacity: selectedNodeId ? 0.8 : 1
-          }}
-          transition={{ duration: 0.6, type: "spring" }}
-        >
-          
-          {/* Central Core Decoration */}
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[30%] h-[30%] bg-slate-900/50 rounded-full border border-slate-800 backdrop-blur-sm flex items-center justify-center z-0">
-             <div className="text-center opacity-40">
-                <div className="text-xs font-mono text-neon-blue mb-1">CORE</div>
-                <div className="text-3xl font-bold tracking-tighter text-white">CHIP</div>
-             </div>
-             {/* Spinning Rings */}
-             <div className="absolute inset-0 border border-slate-800 rounded-full animate-spin-slow opacity-30" style={{ borderStyle: 'dashed' }} />
-             <div className="absolute inset-2 border border-slate-700/30 rounded-full animate-spin-slow opacity-30" style={{ animationDirection: 'reverse', animationDuration: '40s' }} />
-          </div>
+              {/* Enter Genesis Story Button */}
+              <button 
+                onClick={() => setViewMode('genesis')}
+                className="hidden md:flex items-center gap-2 px-4 py-2 rounded border border-neon-blue/30 bg-slate-900/50 hover:bg-neon-blue/10 hover:border-neon-blue text-neon-blue transition-all group"
+              >
+                <Film size={18} />
+                <span className="text-sm font-bold">GENESIS STORY</span>
+                <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
+              </button>
+            </header>
 
-          <ConnectionLines 
-            hoveredNode={hoveredNodeId} 
-            selectedNode={selectedNodeId} 
-          />
+            {/* Main Interactive Area */}
+            <main className="relative w-full h-full flex items-center justify-center">
+              
+              {/* Galaxy Container */}
+              <motion.div 
+                className="relative w-[90vmin] h-[90vmin] md:w-[70vmin] md:h-[70vmin]"
+                animate={{
+                  x: selectedNodeId ? '-25%' : '0%',
+                  scale: selectedNodeId ? 0.75 : 1,
+                  opacity: selectedNodeId ? 0.8 : 1
+                }}
+                transition={{ duration: 0.6, type: "spring" }}
+              >
+                
+                {/* Central Core Decoration */}
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[30%] h-[30%] bg-slate-900/50 rounded-full border border-slate-800 backdrop-blur-sm flex items-center justify-center z-0">
+                   <div className="text-center opacity-40">
+                      <div className="text-xs font-mono text-neon-blue mb-1">CORE</div>
+                      <div className="text-3xl font-bold tracking-tighter text-white">CHIP</div>
+                   </div>
+                   <div className="absolute inset-0 border border-slate-800 rounded-full animate-spin-slow opacity-30" style={{ borderStyle: 'dashed' }} />
+                   <div className="absolute inset-2 border border-slate-700/30 rounded-full animate-spin-slow opacity-30" style={{ animationDirection: 'reverse', animationDuration: '40s' }} />
+                </div>
 
-          {NODES.map((node, index) => (
-            <NodeItem
-              key={node.id}
-              node={node}
-              index={index}
-              total={NODES.length}
-              onHover={setHoveredNodeId}
-              onSelect={setSelectedNodeId}
-              isSelected={selectedNodeId === node.id}
-              isDimmed={!!selectedNodeId && selectedNodeId !== node.id}
-            />
-          ))}
+                <ConnectionLines 
+                  hoveredNode={hoveredNodeId} 
+                  selectedNode={selectedNodeId} 
+                />
 
-        </motion.div>
-      </main>
+                {NODES.map((node, index) => (
+                  <NodeItem
+                    key={node.id}
+                    node={node}
+                    index={index}
+                    total={NODES.length}
+                    onHover={setHoveredNodeId}
+                    onSelect={setSelectedNodeId}
+                    isSelected={selectedNodeId === node.id}
+                    isDimmed={!!selectedNodeId && selectedNodeId !== node.id}
+                  />
+                ))}
 
-      {/* Detail Sidebar */}
-      <AnimatePresence>
-        {selectedNode && (
-          <DetailPanel 
-            node={selectedNode} 
-            onClose={() => setSelectedNodeId(null)} 
-          />
+              </motion.div>
+            </main>
+
+            {/* Detail Sidebar */}
+            <AnimatePresence>
+              {selectedNode && (
+                <DetailPanel 
+                  node={selectedNode} 
+                  onClose={() => setSelectedNodeId(null)} 
+                />
+              )}
+            </AnimatePresence>
+
+            {/* Footer Hints */}
+            {!selectedNodeId && (
+              <div className="absolute bottom-6 left-6 text-slate-500 text-xs font-mono pointer-events-none">
+                <p>HOVER TO REVEAL DEPENDENCIES</p>
+                <p>CLICK NODES FOR DATA ANALYSIS</p>
+              </div>
+            )}
+            
+            {/* Mobile Genesis Button (Fixed Bottom) */}
+            <div className="md:hidden absolute bottom-6 left-1/2 -translate-x-1/2 z-40">
+               <button 
+                  onClick={() => setViewMode('genesis')}
+                  className="flex items-center gap-2 px-6 py-3 rounded-full bg-neon-blue text-black font-bold shadow-[0_0_20px_rgba(0,243,255,0.4)]"
+                >
+                  <Film size={18} />
+                  <span>WATCH STORY</span>
+                </button>
+            </div>
+            
+            {/* AI Assistant Chat */}
+            <ChatWidget />
+          </motion.div>
         )}
       </AnimatePresence>
-
-      {/* Footer Hints */}
-      {!selectedNodeId && (
-        <div className="absolute bottom-6 left-6 text-slate-500 text-xs font-mono pointer-events-none">
-          <p>HOVER TO REVEAL DEPENDENCIES</p>
-          <p>CLICK NODES FOR DATA ANALYSIS</p>
-        </div>
-      )}
-
-      {/* AI Assistant Chat */}
-      <ChatWidget />
+      
+      {/* Genesis Story View */}
+      <AnimatePresence>
+         {viewMode === 'genesis' && (
+            <GenesisStory 
+               onBack={() => setViewMode('galaxy')} 
+               onDeepDive={handleDeepDive} 
+            />
+         )}
+      </AnimatePresence>
 
     </div>
   );
